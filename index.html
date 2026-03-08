@@ -993,7 +993,7 @@
                 </div>
                 <div class="flex-1 max-w-[85%] md:max-w-[75%]">
                     <div class="glass-card text-gray-100 rounded-2xl rounded-tl-sm px-4 py-3 border border-gray-700/50 shadow-lg">
-                        <div class="markdown-content text-sm leading-relaxed streaming-cursor" id="streamingContent"></div>
+                        <div class="markdown-content text-sm leading-relaxed streaming-cursor"></div>
                     </div>
                     <div class="text-xs text-gray-500 mt-1 px-1 flex items-center gap-2">
                         <span>${new Date().toLocaleTimeString()}</span>
@@ -1002,6 +1002,9 @@
                 </div>
             `;
             container.appendChild(div);
+            
+            // Get reference to the streaming content element (no ID needed)
+            const streamingEl = div.querySelector('.markdown-content');
             scrollToBottom();
 
             while (true) {
@@ -1022,7 +1025,6 @@
                             const content = parsed.choices?.[0]?.delta?.content || '';
                             if (content) {
                                 fullContent += content;
-                                const streamingEl = document.getElementById('streamingContent');
                                 if (streamingEl) {
                                     streamingEl.innerHTML = formatMarkdown(fullContent);
                                     streamingEl.classList.add('streaming-cursor');
@@ -1037,10 +1039,9 @@
             }
 
             // Remove cursor effect when done
-            const finalEl = document.getElementById('streamingContent');
-            if (finalEl) {
-                finalEl.classList.remove('streaming-cursor');
-                finalEl.innerHTML = formatMarkdown(fullContent);
+            if (streamingEl) {
+                streamingEl.classList.remove('streaming-cursor');
+                streamingEl.innerHTML = formatMarkdown(fullContent);
             }
 
             messages.push({ role: 'assistant', content: fullContent });
