@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus AI - Premium Chat Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.5);
+        }
+        
+        /* Animations */
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.6); }
+        }
+        
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes typing {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+        
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradient-shift 8s ease infinite;
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .animate-slide-up {
+            animation: slide-up 0.4s ease-out forwards;
+        }
+        
+        .glass-effect {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-card {
+            background: rgba(31, 41, 55, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .message-bubble {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .message-bubble:hover {
+            transform: translateX(4px);
+        }
+        
+        .code-block {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .typing-dot {
+            animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .text-gradient-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Input Focus Effect */
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+        
+        /* Button Hover Effects */
+        .btn-hover {
+            transition: all 0.3s ease;
+        }
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.5);
+        }
+        
+        /* Sidebar Transition */
+        .sidebar-transition {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Markdown Styles */
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content p {
+            margin-bottom: 0.75rem;
+            line-height: 1.7;
+        }
+        .markdown-content code {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+        }
+        .markdown-content pre {
+            background: #0d1117;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+        }
+        .markdown-content ul, .markdown-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #6366f1;
+            padding-left: 1rem;
+            margin: 0.75rem 0;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 overflow-hidden h-screen">
+
+    <!-- Background Effects -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-float" style="animation-delay: -3s;"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-br from-indigo-900/10 via-transparent to-purple-900/10 animate-gradient"></div>
+    </div>
+
+    <!-- App Container -->
+    <div class="relative h-full flex">
+        
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar-transition fixed md:relative z-40 w-72 h-full glass-effect border-r border-gray-800 transform -translate-x-full md:translate-x-0 flex flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-800/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <i class="fas fa-bolt text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-xl tracking-tight">Nexus AI</h1>
+                        <p class="text-xs text-gray-400">Powered by Intelligence</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Chat Button -->
+            <div class="p-4">
+                <button onclick="newChat()" class="w-full btn-hover bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl py-3 px-4 flex items-center justify-center gap-2 font-medium transition-all">
+                    <i class="fas fa-plus"></i>
+                    <span>New Conversation</span>
+                </button>
+            </div>
+
+            <!-- History -->
+            <div class="flex-1 overflow-y-auto px-3 py-2">
+                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">Recent Chats</div>
+                <div id="chatHistory" class="space-y-1">
+                    <!-- Dynamic History Items -->
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="p-4 border-t border-gray-800/50 space-y-2">
+                <button onclick="toggleSettings()" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-800/50 transition-colors text-sm text-gray-300">
+                    <i class="fas fa-cog w-5"></i>
+                    <span>Settings</span>
+                </button>
+                <button class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-800/50 transition-colors text-sm text-gray-300">
+                    <i class="fas fa-question-circle w-5"></i>
+                    <span>Help & FAQ</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Overlay -->
+        <div id="mobileOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full relative">
+            <!-- Header -->
+            <header class="glass-effect border-b border-gray-800/50 px-6 py-4 flex items-center justify-between sticky top-0 z-20">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden w-10 h-10 rounded-lg hover:bg-gray-800/50 flex items-center justify-center transition-colors">
+                        <i class="fas fa-bars text-gray-400"></i>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span class="text-sm font-medium text-gray-300">AI Ready</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="clearChat()" class="w-10 h-10 rounded-lg hover:bg-gray-800/50 flex items-center justify-center text-gray-400 hover:text-red-400 transition-all" title="Clear Chat">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm shadow-lg shadow-indigo-500/20">
+                        U
+                    </div>
+                </div>
+            </header>
+
+            <!-- Chat Container -->
+            <div id="chatContainer" class="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 scroll-smooth">
+                <!-- Welcome Screen -->
+                <div id="welcomeScreen" class="flex flex-col items-center justify-center h-full text-center max-w-2xl mx-auto animate-slide-up">
+                    <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 flex items-center justify-center mb-6 border border-indigo-500/20 animate-float">
+                        <i class="fas fa-robot text-4xl text-indigo-400"></i>
+                    </div>
+                    <h2 class="text-4xl font-bold mb-4 text-gradient">Welcome to Nexus AI</h2>
+                    <p class="text-gray-400 text-lg mb-8 leading-relaxed">
+                        Experience the next generation of AI conversation. 
+                        <br>Powered by advanced language models with a premium interface.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                        <div class="glass-card p-4 rounded-xl hover:bg-gray-800/60 transition-all cursor-pointer group" onclick="setInput('Explain quantum computing in simple terms')">
+                            <i class="fas fa-atom text-indigo-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
+                            <h3 class="font-semibold mb-1">Explain Complex Topics</h3>
+                            <p class="text-sm text-gray-500">Break down difficult concepts</p>
+                        </div>
+                        <div class="glass-card p-4 rounded-xl hover:bg-gray-800/60 transition-all cursor-pointer group" onclick="setInput('Write a creative story about space exploration')">
+                            <i class="fas fa-pen-fancy text-purple-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
+                            <h3 class="font-semibold mb-1">Creative Writing</h3>
+                            <p class="text-sm text-gray-500">Stories, poems, and content</p>
+                        </div>
+                        <div class="glass-card p-4 rounded-xl hover:bg-gray-800/60 transition-all cursor-pointer group" onclick="setInput('Debug this code: function add(a, b) { return a + b }')">
+                            <i class="fas fa-code text-pink-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
+                            <h3 class="font-semibold mb-1">Code Assistance</h3>
+                            <p class="text-sm text-gray-500">Programming help & debugging</p>
+                        </div>
+                        <div class="glass-card p-4 rounded-xl hover:bg-gray-800/60 transition-all cursor-pointer group" onclick="setInput('Analyze the latest trends in artificial intelligence')">
+                            <i class="fas fa-chart-line text-blue-400 mb-2 text-xl group-hover:scale-110 transition-transform"></i>
+                            <h3 class="font-semibold mb-1">Research & Analysis</h3>
+                            <p class="text-sm text-gray-500">Deep insights on any topic</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages will appear here -->
+                <div id="messagesArea" class="hidden space-y-6 max-w-4xl mx-auto w-full"></div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="glass-effect border-t border-gray-800/50 p-4 md:p-6">
+                <div class="max-w-4xl mx-auto relative">
+                    <div class="relative flex items-end gap-2 bg-gray-900/80 rounded-2xl border border-gray-700/50 p-2 focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all input-glow">
+                        <button class="w-10 h-10 rounded-xl hover:bg-gray-800 flex items-center justify-center text-gray-400 transition-colors flex-shrink-0" title="Attach file">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        
+                        <textarea 
+                            id="userInput" 
+                            rows="1" 
+                            placeholder="Message Nexus AI..." 
+                            class="flex-1 bg-transparent border-none outline-none resize-none py-3 px-2 text-gray-100 placeholder-gray-500 max-h-32 min-h-[44px]"
+                            onkeydown="handleKeyDown(event)"
+                            oninput="autoResize(this)"
+                        ></textarea>
+                        
+                        <button 
+                            id="sendBtn" 
+                            onclick="sendMessage()" 
+                            class="w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white flex items-center justify-center transition-all btn-hover flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <i class="fas fa-paper-plane text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="text-center mt-2 text-xs text-gray-600">
+                        Nexus AI can make mistakes. Consider checking important information.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="glass-effect rounded-2xl w-full max-w-md mx-4 p-6 border border-gray-700 shadow-2xl transform transition-all scale-100">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gradient">Settings</h2>
+                <button onclick="toggleSettings()" class="w-8 h-8 rounded-lg hover:bg-gray-800 flex items-center justify-center text-gray-400">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">API Endpoint</label>
+                    <input type="text" id="apiEndpoint" placeholder="https://api.openai.com/v1/chat/completions" 
+                        class="w-full bg-gray-900/80 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">API Key</label>
+                    <input type="password" id="apiKey" placeholder="sk-..." 
+                        class="w-full bg-gray-900/80 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Model</label>
+                    <select id="modelSelect" class="w-full bg-gray-900/80 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors">
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                        <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Temperature: <span id="tempValue">0.7</span></label>
+                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" 
+                        class="w-full accent-indigo-500"
+                        oninput="document.getElementById('tempValue').textContent = this.value">
+                </div>
+            </div>
+            
+            <div class="mt-6 flex gap-3">
+                <button onclick="saveSettings()" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white py-2 rounded-lg font-medium transition-all btn-hover">
+                    Save Settings
+                </button>
+                <button onclick="toggleSettings()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded-lg font-medium transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let messages = [];
+        let isGenerating = false;
+        let currentChatId = Date.now();
+        
+        // Load settings from localStorage
+        const settings = JSON.parse(localStorage.getItem('nexusSettings')) || {
+            apiEndpoint: '',
+            apiKey: '',
+            model: 'gpt-3.5-turbo',
+            temperature: 0.7
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            loadChatHistory();
+            document.getElementById('userInput').focus();
+        });
+
+        // UI Functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function loadSettings() {
+            document.getElementById('apiEndpoint').value = settings.apiEndpoint;
+            document.getElementById('apiKey').value = settings.apiKey;
+            document.getElementById('modelSelect').value = settings.model;
+            document.getElementById('temperature').value = settings.temperature;
+            document.getElementById('tempValue').textContent = settings.temperature;
+        }
+
+        function saveSettings() {
+            settings.apiEndpoint = document.getElementById('apiEndpoint').value;
+            settings.apiKey = document.getElementById('apiKey').value;
+            settings.model = document.getElementById('modelSelect').value;
+            settings.temperature = parseFloat(document.getElementById('temperature').value);
+            
+            localStorage.setItem('nexusSettings', JSON.stringify(settings));
+            toggleSettings();
+            showNotification('Settings saved successfully!');
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function setInput(text) {
+            const input = document.getElementById('userInput');
+            input.value = text;
+            input.focus();
+            autoResize(input);
+        }
+
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'fixed top-4 right-4 bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        // Chat Functions
+        function newChat() {
+            currentChatId = Date.now();
+            messages = [];
+            document.getElementById('messagesArea').innerHTML = '';
+            document.getElementById('messagesArea').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            document.getElementById('userInput').value = '';
+            document.getElementById('userInput').style.height = 'auto';
+            
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        function clearChat() {
+            if (messages.length === 0) return;
+            
+            if (confirm('Are you sure you want to clear this conversation?')) {
+                messages = [];
+                document.getElementById('messagesArea').innerHTML = '';
+                document.getElementById('messagesArea').classList.add('hidden');
+                document.getElementById('welcomeScreen').classList.remove('hidden');
+                showNotification('Chat cleared');
+            }
+        }
+
+        function loadChatHistory() {
+            const history = JSON.parse(localStorage.getItem('nexusChatHistory')) || [];
+            const container = document.getElementById('chatHistory');
+            container.innerHTML = '';
+            
+            history.slice(-10).reverse().forEach(chat => {
+                const div = document.createElement('div');
+                div.className = 'group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-800/50 cursor-pointer transition-colors text-sm text-gray-300';
+                div.innerHTML = `
+                    <i class="fas fa-comment-alt text-gray-500 group-hover:text-indigo-400"></i>
+                    <span class="truncate flex-1">${chat.title || 'New Conversation'}</span>
+                `;
+                div.onclick = () => loadChat(chat.id);
+                container.appendChild(div);
+            });
+        }
+
+        function saveToHistory() {
+            if (messages.length === 0) return;
+            
+            const history = JSON.parse(localStorage.getItem('nexusChatHistory')) || [];
+            const existingIndex = history.findIndex(h => h.id === currentChatId);
+            
+            const chatData = {
+                id: currentChatId,
+                title: messages[0]?.content.slice(0, 30) + '...' || 'New Conversation',
+                messages: messages,
+                timestamp: Date.now()
+            };
+            
+            if (existingIndex >= 0) {
+                history[existingIndex] = chatData;
+            } else {
+                history.push(chatData);
+            }
+            
+            localStorage.setItem('nexusChatHistory', JSON.stringify(history.slice(-20)));
+            loadChatHistory();
+        }
+
+        function loadChat(id) {
+            const history = JSON.parse(localStorage.getItem('nexusChatHistory')) || [];
+            const chat = history.find(h => h.id === id);
+            
+            if (chat) {
+                currentChatId = id;
+                messages = chat.messages || [];
+                renderMessages();
+                
+                if (window.innerWidth < 768) {
+                    toggleSidebar();
+                }
+            }
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('messagesArea');
+            const welcome = document.getElementById('welcomeScreen');
+            
+            if (messages.length > 0) {
+                welcome.classList.add('hidden');
+                container.classList.remove('hidden');
+                container.innerHTML = '';
+                
+                messages.forEach((msg, index) => {
+                    appendMessageToDOM(msg.role, msg.content, index);
+                });
+                
+                scrollToBottom();
+            }
+        }
+
+        function appendMessageToDOM(role, content, index) {
+            const container = document.getElementById('messagesArea');
+            const isUser = role === 'user';
+            
+            const div = document.createElement('div');
+            div.className = `flex gap-4 ${isUser ? 'flex-row-reverse' : ''} animate-slide-up message-bubble`;
+            div.style.animationDelay = `${index * 0.1}s`;
+            
+            const avatar = isUser ? 
+                `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">U</div>` :
+                `<div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white flex-shrink-0">
+                    <i class="fas fa-robot text-sm"></i>
+                </div>`;
+            
+            const bubbleClass = isUser ?
+                'bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-2xl rounded-tr-sm' :
+                'glass-card text-gray-100 rounded-2xl rounded-tl-sm border border-gray-700/50';
+            
+            const formattedContent = isUser ? 
+                escapeHtml(content) : 
+                formatMarkdown(content);
+            
+            div.innerHTML = `
+                ${avatar}
+                <div class="flex-1 ${isUser ? 'text-right' : ''} max-w-[85%] md:max-w-[75%]">
+                    <div class="${bubbleClass} px-4 py-3 inline-block text-left shadow-lg">
+                        <div class="${isUser ? '' : 'markdown-content'} text-sm leading-relaxed">
+                            ${formattedContent}
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        ${new Date().toLocaleTimeString()}
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(div);
+        }
+
+        function showTypingIndicator() {
+            const container = document.getElementById('messagesArea');
+            const div = document.createElement('div');
+            div.id = 'typingIndicator';
+            div.className = 'flex gap-4 animate-slide-up';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white flex-shrink-0">
+                    <i class="fas fa-robot text-sm"></i>
+                </div>
+                <div class="glass-card rounded-2xl rounded-tl-sm px-4 py-3 border border-gray-700/50">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 rounded-full bg-gray-400 typing-dot"></div>
+                        <div class="w-2 h-2 rounded-full bg-gray-400 typing-dot"></div>
+                        <div class="w-2 h-2 rounded-full bg-gray-400 typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message || isGenerating) return;
+            
+            // Hide welcome screen
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('messagesArea').classList.remove('hidden');
+            
+            // Add user message
+            messages.push({ role: 'user', content: message });
+            appendMessageToDOM('user', message, messages.length - 1);
+            
+            // Clear input
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Show typing indicator
+            isGenerating = true;
+            document.getElementById('sendBtn').disabled = true;
+            showTypingIndicator();
+            
+            try {
+                // Check if API is configured
+                if (!settings.apiKey || !settings.apiEndpoint) {
+                    await simulateResponse(message);
+                } else {
+                    await callAPI();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Failed to get response. Please check your settings.');
+            } finally {
+                removeTypingIndicator();
+                isGenerating = false;
+                document.getElementById('sendBtn').disabled = false;
+                saveToHistory();
+            }
+        }
+
+        async function callAPI() {
+            const response = await fetch(settings.apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${settings.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: settings.model,
+                    messages: messages.map(m => ({ role: m.role, content: m.content })),
+                    temperature: settings.temperature,
+                    stream: true
+                })
+            });
+
+            if (!response.ok) throw new Error('API request failed');
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullContent = '';
+
+            // Create message container for streaming
+            const container = document.getElementById('messagesArea');
+            const div = document.createElement('div');
+            div.className = 'flex gap-4 animate-slide-up message-bubble';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white flex-shrink-0">
+                    <i class="fas fa-robot text-sm"></i>
+                </div>
+                <div class="flex-1 max-w-[85%] md:max-w-[75%]">
+                    <div class="glass-card text-gray-100 rounded-2xl rounded-tl-sm px-4 py-3 border border-gray-700/50 shadow-lg">
+                        <div class="markdown-content text-sm leading-relaxed" id="streamingContent"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6);
+                        if (data === '[DONE]') continue;
+                        
+                        try {
+                            const parsed = JSON.parse(data);
+                            const content = parsed.choices?.[0]?.delta?.content || '';
+                            fullContent += content;
+                            document.getElementById('streamingContent').innerHTML = formatMarkdown(fullContent);
+                            scrollToBottom();
+                        } catch (e) {
+                            // Ignore parsing errors for [DONE] or empty lines
+                        }
+                    }
+                }
+            }
+
+            messages.push({ role: 'assistant', content: fullContent });
+        }
+
+        async function simulateResponse(userMessage) {
+            // Demo mode - simulate AI response
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            const responses = [
+                "I understand you're asking about **" + userMessage.slice(0, 30) + "...** Let me help you with that.\n\nThis is a demo response. To get real AI responses, please configure your API settings by clicking the gear icon in the sidebar.",
+                "That's an interesting question! Here's what I think:\n\n```javascript\n// Example code\nfunction respond(message) {\n  return \"Demo mode active\";\n}\n```\n\nConfigure your API in settings for real responses.",
+                "I'd be happy to help with that. However, I'm currently running in **demo mode**.\n\nTo enable full functionality:\n1. Click Settings (gear icon)\n2. Add your API endpoint\n3. Add your API key\n4. Select your preferred model",
+                "Great question! Here's my analysis:\n\n1. **Point One**: Demo mode is active\n2. **Point Two**: API not configured\n3. **Point Three**: Check settings to fix this\n\n> Note: This is a simulated response for demonstration purposes."
+            ];
+            
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            messages.push({ role: 'assistant', content: randomResponse });
+            appendMessageToDOM('assistant', randomResponse, messages.length - 1);
+        }
+
+        function showError(message) {
+            const container = document.getElementById('messagesArea');
+            const div = document.createElement('div');
+            div.className = 'flex gap-4 animate-slide-up';
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-sm"></i>
+                </div>
+                <div class="flex-1 max-w-[85%] md:max-w-[75%]">
+                    <div class="bg-red-500/10 border border-red-500/20 text-red-200 rounded-2xl rounded-tl-sm px-4 py-3">
+                        <p class="text-sm">${message}</p>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
+        function formatMarkdown(text) {
+            // Basic markdown formatting
+            let formatted = escapeHtml(text);
+            
+            // Code blocks
+            formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>');
+            
+            // Inline code
+            formatted = formatted.replace(/`([^`]+)`/g, '<code class="bg-indigo-500/20 text-indigo-300 px-1 rounded">$1</code>');
+            
+            // Bold
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>');
+            
+            // Italic
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            // Headers
+            formatted = formatted.replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2 text-white">$1</h3>');
+            formatted = formatted.replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2 text-white">$1</h2>');
+            formatted = formatted.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2 text-white">$1</h1>');
+            
+            // Lists
+            formatted = formatted.replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal">$1</li>');
+            formatted = formatted.replace(/^- (.*$)/gim, '<li class="ml-4 list-disc">$1</li>');
+            
+            // Blockquotes
+            formatted = formatted.replace(/^> (.*$)/gim, '<blockquote class="border-l-2 border-indigo-500 pl-4 my-2 text-gray-400 italic">$1</blockquote>');
+            
+            // Line breaks
+            formatted = formatted.replace(/\n/g, '<br>');
+            
+            return formatted;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Auto-save chat every 30 seconds
+        setInterval(saveToHistory, 30000);
+    </script>
+</body>
+</html>
